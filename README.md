@@ -8,7 +8,7 @@ This project is a robust, full-stack web application designed to demonstrate cle
 - **Backend**: Node.js + Express (TypeScript).
 - **Database**: MySQL (using `mysql2` with connecting pooling, **Raw SQL** for performance).
 - **Architecture**: **Strict Repository Pattern** (Controller ↔ Service ↔ Repository).
-- **Frontend**: Lightweight HTML/CSS/VanillaJS (No heavy framework dependencies).
+- **Frontend**: Lightweight HTML/CSS/(No heavy framework dependencies).
 
 ## 🛠 Technology Stack
 
