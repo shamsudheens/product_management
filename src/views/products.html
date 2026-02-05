@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - Product Management</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body class="padded">
+    <div class="container medium">
+        <div class="header">
+            <h1>Product Management</h1>
+            <div>
+                <a href="/reports.html" style="margin-right: 15px;">Reports</a>
+                <button onclick="logout()" class="btn-primary">Logout</button>
+            </div>
+        </div>
+
+        <div class="form-group" id="productForm">
+            <input type="text" id="name" placeholder="Product Name">
+            <input type="number" id="price" placeholder="Price" step="0.01">
+            <input type="number" id="quantity" placeholder="Quantity">
+            <button onclick="addProduct()" class="btn-primary">Add Product</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="productTable">
+                <!-- Products will be loaded here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '/login.html';
+
+        async function fetchProducts() {
+            try {
+                const res = await fetch('/products', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.status === 401) return logout();
+                const products = await res.json();
+                renderTable(products);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderTable(products) {
+            const tbody = document.getElementById('productTable');
+            tbody.innerHTML = products.map(p => `
+                <tr>
+                    <td>${p.name}</td>
+                    <td>$${p.price}</td>
+                    <td>${p.quantity}</td>
+                    <td>
+                        <button onclick="deleteProduct(${p.id})" class="btn-danger">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function addProduct() {
+            const name = document.getElementById('name').value;
+            const price = document.getElementById('price').value;
+            const quantity = document.getElementById('quantity').value;
+
+            if (!name || !price || !quantity) return alert('Fill all fields');
+
+            const res = await fetch('/products', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ name, price: parseFloat(price), quantity: parseInt(quantity) })
+            });
+
+            if (res.ok) {
+                document.getElementById('name').value = '';
+                document.getElementById('price').value = '';
+                document.getElementById('quantity').value = '';
+                fetchProducts();
+            } else {
+                alert('Error adding product');
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('Are you sure?')) return;
+            const res = await fetch(`/products/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) fetchProducts();
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/login.html';
+        }
+
+        fetchProducts();
+    </script>
+</body>
+
+</html>
